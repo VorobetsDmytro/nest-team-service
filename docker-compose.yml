@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  server:
+    container_name: server
+    build:
+      context: .
+    env_file:
+      - .env.docker
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - 5000:5000
+      - 8080:8080
+    command: npm run start:dev
+    depends_on:
+      - postgres
+  migrations:
+    container_name: migrations
+    build:
+      context: .
+    env_file:
+      - .env.docker
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run migration:up
+    depends_on:
+      - postgres
+  seeds:
+    container_name: seeds
+    build:
+      context: .
+    env_file:
+      - .env.docker
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run seed:up
+    depends_on:
+      - postgres
+      - migrations
+  postgres:
+    container_name: postgres
+    image: postgres
+    env_file:
+      - .env.docker
+    environment:
+      PG_DATA: /var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    env_file:
+      - .env.docker
+    ports: 
+      - 5050:80
+    volumes:
+      - /var/lib/pgadmin
+    
+volumes:
+  pgdata:
